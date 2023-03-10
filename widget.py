@@ -3,6 +3,9 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import Qt
 from PyQt5.QtCore import QCoreApplication
+import os
+
+from pyqt_image_file_explorer_table_widget.imageFileExplorerTableWidget import ImageFileExplorerTableWidget
 
 class sort_widget(QWidget):
     def __init__(self):
@@ -22,9 +25,7 @@ class sort_widget(QWidget):
         # top_right.setFrameShape(QFrame.WinPanel)
         # top_right.setFrameShadow(QFrame.Sunken)
         
-        bottom_right = QFrame()
-        bottom_right.setFrameShape(QFrame.WinPanel)
-        bottom_right.setFrameShadow(QFrame.Sunken)
+        bottom_right = ImageFileExplorerExample()
 
         splitter1 = QSplitter(Qt.Vertical)
         splitter1.addWidget(top_left)
@@ -165,3 +166,45 @@ class OptionBox(QWidget):
         groupbox.setLayout(vbox)
 
         return groupbox
+
+class ImageFileExplorerExample(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.__initUi()
+
+    def __initUi(self):
+        self.__tableWidget = ImageFileExplorerTableWidget()
+
+        addBtn = QPushButton('Add')
+        addBtn.clicked.connect(self.__add)
+
+        delBtn = QPushButton('Remove')
+        delBtn.clicked.connect(self.__delete)
+
+        lay = QHBoxLayout()
+        lay.addWidget(addBtn)
+        lay.addWidget(delBtn)
+        lay.setContentsMargins(0, 0, 0, 0)
+
+        btns = QWidget()
+        btns.setLayout(lay)
+
+        self.__tableWidget.setColumnCount(6)
+
+        lay = QGridLayout()
+        lay.addWidget(btns)
+        lay.addWidget(self.__tableWidget)
+        lay.setContentsMargins(0, 0, 0, 0)
+
+        self.setLayout(lay)
+
+    def __add(self):
+        dirname = QFileDialog.getExistingDirectory(self, 'Open directory', '')
+        if dirname:
+            filenames = [os.path.join(dirname, filename) for filename in os.listdir(dirname)]
+            filenames = list(filter(lambda x: os.path.splitext(x)[-1] in ['.png'],
+                                    [filename for filename in filenames])) # In this example, png only
+            self.__tableWidget.addCells(filenames)
+
+    def __delete(self):
+        self.__tableWidget.removeSelectedCells()
